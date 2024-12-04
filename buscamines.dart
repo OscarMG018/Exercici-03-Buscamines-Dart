@@ -13,7 +13,7 @@ class Cell {
 List<List<Cell>> board = [];
 const int BOARD_WIDTH = 10;
 const int BOARD_HEIGHT = 6;
-const int MINES = 8;
+const int MINES = 12;
 bool isFirstReveal = true;
 bool cheat = false;
 
@@ -36,11 +36,31 @@ void createBoard() {
   }
 }
 
+List<int> distributeEqually(int total) {
+  int base = total ~/ 4; 
+  int remainder = total % 4;
+  
+  List<int> result = List<int>.generate(4, (i) => i < remainder ? base + 1 : base);
+  return result;
+}
+
 void fillMines() {
-  for (int i = 0; i < MINES; i++) {
-    int x = Random().nextInt(BOARD_WIDTH);
-    int y = Random().nextInt(BOARD_HEIGHT);
-    if (!board[y][x].isMine) {
+  List<int> minesPerQuadrant = distributeEqually(MINES);
+  List<List<int>> quadrants = [
+    [0, 0, BOARD_WIDTH ~/ 2, BOARD_HEIGHT ~/ 2],
+    [BOARD_WIDTH ~/ 2, 0, BOARD_WIDTH, BOARD_HEIGHT ~/ 2],
+    [0, BOARD_HEIGHT ~/ 2, BOARD_WIDTH ~/ 2, BOARD_HEIGHT],
+    [BOARD_WIDTH ~/ 2, BOARD_HEIGHT ~/ 2, BOARD_WIDTH, BOARD_HEIGHT]
+  ];
+
+  for (List<int> quadrant in quadrants) {
+    for (int i = 0; i < minesPerQuadrant[quadrants.indexOf(quadrant)]; i++) {
+      int x = Random().nextInt(quadrant[2] - quadrant[0]) + quadrant[0];
+      int y = Random().nextInt(quadrant[3] - quadrant[1]) + quadrant[1];
+      if (board[y][x].isMine) {
+        i--;
+        continue;
+      }
       board[y][x].isMine = true;
     }
   }
